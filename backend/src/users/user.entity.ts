@@ -1,4 +1,3 @@
-
 import { Exclude } from 'class-transformer';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Status } from './user.enums';

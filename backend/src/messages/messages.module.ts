@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { MessagesService } from './messages.service';
 import { MessagesGateway } from './messages.gateway';
@@ -10,8 +9,8 @@ import { MessagesController } from './messages.controller';
 import Channel from './entities/channel.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Channel])] ,
-  controllers:[MessagesController],
-  providers: [MessagesGateway, MessagesService]
+	imports: [TypeOrmModule.forFeature([Channel])],
+	controllers: [MessagesController],
+	providers: [MessagesGateway, MessagesService],
 })
 export class MessagesModule {}

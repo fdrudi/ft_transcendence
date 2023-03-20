@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from 'src/users/users.module';
@@ -9,7 +8,7 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt-strategy';
-import { TwoFactorAuthenticationController } from './2fa/twofactor.controller';
+import { TwoFactorAuthenticationController } from './2fa/twoFactor.controller';
 import { TwoFactorAuthenticationService } from './2fa/twoFactorAuthentication.service';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { Auth42Strategy } from './strategies/intra42.strategy';
