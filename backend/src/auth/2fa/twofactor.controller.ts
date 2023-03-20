@@ -1,13 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { ClassSerializerInterceptor, Controller, Header, Post, UseInterceptors, Res, UseGuards, Req, HttpCode, Body, UnauthorizedException, Get } from '@nestjs/common';
 import { TwoFactorAuthenticationService } from './twoFactorAuthentication.service';
 import { Response, response } from 'express';
 import JwtAuthenticationGuard from '../guard/jwt.guard';
 import RequestWithUser from '../interface/requestWithUser.interface';
 import { UsersService } from 'src/users/users.service';
-import { TwoFactorAuthenticationCodeDto } from './TwoFactorDto';
+import { TwoFactorAuthenticationCodeDto } from './twoFactor.dto';
 import { AuthService } from '../auth.service';
+import { toFileStream, toFile, toDataURL } from 'qrcode';
 import { AuthGuard } from '@nestjs/passport';
 import User from 'src/users/user.entity';
 import { UserDto } from 'src/users/user.dto';
@@ -28,9 +27,9 @@ export class TwoFactorAuthenticationController {
    ---------------------------------------------------------------------------*/
 	@Post('generate')
 	@UseGuards(JwtAuthenticationGuard)
-	async register(@Res() response: Response, @Req() request: RequestWithUser) {
-		const { otpauthUrl } = await this.twoFactorAuthenticationService.generateTwoFactorAuthenticationSecret(request.user);
-		return this.twoFactorAuthenticationService.pipeQrCodeStream(response, otpauthUrl);
+	async register(@Req() request: RequestWithUser) {
+		const { otpAuthUrl } = await this.twoFactorAuthenticationService.generateTwoFactorAuthenticationSecret(request.user);
+		return toDataURL(otpAuthUrl);
 	}
 
 	/*------------------ TURN-ON -----------------------------------------
@@ -67,8 +66,11 @@ export class TwoFactorAuthenticationController {
 	@Post('authenticate')
 	@HttpCode(200)
 	@UseGuards(JwtAuthenticationGuard)
-	async authenticate(@Req() request: RequestWithUser, @Body() { twoFactorAuthenticationCode }: TwoFactorAuthenticationCodeDto) {
-		const isCodeValid = this.twoFactorAuthenticationService.isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode, <string>request.user.twoFactorAuthenticationSecret);
+	async authenticate(@Req() request: RequestWithUser, @Body() twoFacAuthCode: TwoFactorAuthenticationCodeDto) {
+		const isCodeValid = this.twoFactorAuthenticationService.isTwoFactorAuthenticationCodeValid(
+			twoFacAuthCode.twoFactorAuthenticationCode,
+			<string>request.user.twoFactorAuthenticationSecret,
+		);
 		if (!isCodeValid) {
 			throw new UnauthorizedException('Wrong authentication code');
 		}

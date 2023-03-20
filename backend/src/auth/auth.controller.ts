@@ -1,7 +1,6 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { Body, Controller, Delete, Get, HttpCode, Post, Redirect, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';

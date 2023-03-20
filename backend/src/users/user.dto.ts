@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { Injectable } from '@nestjs/common';
@@ -29,12 +28,12 @@ export default CreateUserDto;
 
 @Injectable()
 export class UserDto {
-	public id: number;
-	public username: string;
-	public email: string;
-	public twoFactorAuthenticationSecret?: string;
-	public isTwoFactorAuthenticationEnabled: boolean;
-	public pictureLink: string;
+	id: number;
+	username: string;
+	email: string;
+	twoFactorAuthenticationSecret?: string;
+	isTwoFactorAuthenticationEnabled: boolean;
+	pictureLink: string;
 	constructor(user: any) {
 		(this.pictureLink = user.pictureLink),
 			(this.id = user.id),
