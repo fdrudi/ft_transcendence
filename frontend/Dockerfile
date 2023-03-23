@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:18-alpine
 
 ENV NODE_ENV=dev
 
@@ -12,7 +12,5 @@ RUN yarn add prettier
 RUN yarn install
 
 COPY . .
-
-# RUN cd ./src
 
 CMD [ "yarn", "start" ]

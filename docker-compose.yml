@@ -1,5 +1,6 @@
 version: '3'
 services:
+
     frontend:
         build: frontend/
         image: frontend
@@ -11,6 +12,32 @@ services:
         networks:
             - trascendence
 
+    backend:
+        build: backend/
+        image: backend
+        container_name: backend
+        ports:
+            - '8081:8081'
+        volumes:
+            - ./backend/src:/app/src
+        depends_on:
+            - postgres
+        networks:
+            - trascendence
+
+    postgres:
+        image: postgres:latest
+        container_name: postgres
+        ports:
+            - '5432:5432'
+        volumes:
+            - /var/folders/postgres:/data/postgres
+        env_file:
+            - docker.env
+        networks:
+            - trascendence
+
 networks:
     trascendence:
+      name: nw_trascendence
 
