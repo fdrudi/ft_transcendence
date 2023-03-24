@@ -8,8 +8,8 @@ COPY ["package.json", "package-lock.json", \
 		"ormconfig.ts", "nest-cli.json", \
 		".eslintrc.js", "tsconfig.json", "./"]
 
-RUN npm install eslint-plugin-prettier
-RUN npm install prettier
+# RUN npm install eslint-plugin-prettier
+# RUN npm install prettier
 
 
 RUN npm i --save @nestjs/passport passport

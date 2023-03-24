@@ -24,9 +24,10 @@ services:
             - postgres
         networks:
             - trascendence
+            - postgres
 
     postgres:
-        image: postgres:latest
+        image: postgres:alpine
         container_name: postgres
         ports:
             - '5432:5432'
@@ -35,9 +36,12 @@ services:
         env_file:
             - docker.env
         networks:
-            - trascendence
+            - postgres
 
 networks:
     trascendence:
       name: nw_trascendence
+
+    postgres:
+      name: db_trascendence
 
