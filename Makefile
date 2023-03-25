@@ -10,11 +10,13 @@ clean: stop
 	@ docker system prune -a -f
 
 prune: clean
-
 	@ docker volume rm $$(docker volume ls -qf dangling=true)
 
 re: clean
 	@ docker-compose -f docker-compose.yml up --build
+
+
+# SERVIZI SINGOLI
 
 frontend: .FORCE
 	@ docker-compose -f docker-compose.yml up --no-deps frontend

@@ -1,6 +1,6 @@
 FROM node:18-alpine
 
-ENV NODE_ENV=dev
+ENV NODE_ENV=development
 
 WORKDIR /app
 

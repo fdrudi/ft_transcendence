@@ -9,6 +9,8 @@ services:
             - '3000:3000'
         volumes:
             - ./frontend/src:/app/src
+            - ./frontend/package.json:/app/package.json
+            - ./frontend/package-lock.json:/app/package-lock.json
         networks:
             - trascendence
 
@@ -20,6 +22,8 @@ services:
             - '8081:8081'
         volumes:
             - ./backend/src:/app/src
+            - ./backend/package.json:/app/package.json
+            - ./backend/package-lock.json:/app/package-lock.json
         depends_on:
             - postgres
         networks:
@@ -44,4 +48,3 @@ networks:
 
     postgres:
       name: db_trascendence
-
