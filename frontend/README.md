@@ -44,12 +44,15 @@ The architecture is based on the "Atomic Design" methodology, which helps struct
 By using this methodology, you can develop components in a systematic and scalable way, making maintenance and component reusability easier.
 
 # Installation
+
 Install deps
+
 ```bash
 yarn install
 ```
 
 Install lint extension for vscode
+
 - https://www.digitalocean.com/community/tutorials/workflow-auto-eslinting
 
 # Getting Started with Create React App
