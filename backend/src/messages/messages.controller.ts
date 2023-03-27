@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import JwtAuthenticationGuard from 'src/auth/guard/jwt.guard';
 import RequestWithUser from 'src/auth/interface/requestWithUser.interface';

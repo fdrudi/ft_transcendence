@@ -135,16 +135,18 @@ export class MessagesGateway implements OnGatewayInit {
 		return;
 	}
 
-	@SubscribeMessage('handleDisconnect')
-	async handleDisconnect(@MessageBody('name') name, @MessageBody('channel') channel, client: Socket) {
-		this.messagesService.removeUser(name, channel);
-		return;
-	}
-
 	@SubscribeMessage('typing')
 	async typing(@MessageBody('isTyping') isTyping: boolean, @ConnectedSocket() client: Socket) {
 		const name = await this.messagesService.getClientByName(client.id);
 
 		client.broadcast.emit('typing', { name, isTyping });
+	}
+
+	@SubscribeMessage('leaveChannel')
+	async leaveChannel(@MessageBody('name') name, @MessageBody('channel') channel, @ConnectedSocket() client: Socket) {
+		await this.messagesService.removeUser(name, channel);
+		client.leave(channel);
+		client.disconnect();
+		return;
 	}
 }

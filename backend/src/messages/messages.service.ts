@@ -90,10 +90,9 @@ export class MessagesService {
 		const ch = await this.findChannel(channel);
 		for (let i = 0; i < ch.Partecipant.length; i++) {
 			if (ch.Partecipant[i] == name) {
-				console.log('before' + ch.Partecipant);
 				ch.Partecipant.splice(i, 1);
-				console.log('after' + ch.Partecipant);
 				this.channelRep.update(ch.id, { Partecipant: ch.Partecipant });
+				console.log(`Partecipant: ${name} gone from Room: ${channel}`);
 			}
 		}
 
