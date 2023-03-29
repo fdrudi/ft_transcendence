@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable no-var */
@@ -16,6 +17,9 @@ import RequestWithUser from 'src/auth/interface/requestWithUser.interface';
 import { channel } from 'diagnostics_channel';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import * as bcrypt from 'bcrypt';
+import UserChannel from './entities/user-channel.entity';
+import { CreateUserChannelDto } from './dto/create-user-channel.dto';
+import Channel from './entities/channel.entity';
 
 /*
   
@@ -69,6 +73,7 @@ export class MessagesGateway implements OnGatewayInit {
 
 	@SubscribeMessage('createMessage')
 	async create(@MessageBody() createMessageDto: CreateMessageDto, @ConnectedSocket() client: Socket) {
+		if (await this.messagesService.checkIfSilenzed(client.id.toString()) == true) return;
 		const message = this.messagesService.create(createMessageDto, client.id);
 		this.server.to(createMessageDto.channel).emit('message', message);
 		// this.server.emit('message', message);
@@ -95,7 +100,8 @@ export class MessagesGateway implements OnGatewayInit {
 				const hash = await bcrypt.hash(password, saltOrRounds);
 				password = hash;
 			}
-			this.messagesService.createChannel({
+			
+			const ch = this.messagesService.createChannel({
 				id: name,
 				ChannelName: channel,
 				Owner: name,
@@ -103,6 +109,9 @@ export class MessagesGateway implements OnGatewayInit {
 				Partecipant: name,
 				Password: password,
 			});
+
+			this.messagesService.createUserChannel(ch, {nickname: ch.Owner, channel:ch, id:ch.id, socketId: client.id})
+
 			console.log(`L' utente: ${name} ha creto il canale ${channel}`);
 			client.join(channel);
 			return name;
@@ -128,6 +137,7 @@ export class MessagesGateway implements OnGatewayInit {
 				}
 			}
 			this.messagesService.addUserToChannel(channel, name, (await toFind).id);
+			this.messagesService.createUserChannel(toFind, {nickname: name, channel:toFind, socketId: client.id})
 			client.join(channel);
 			return name;
 		}
@@ -149,4 +159,37 @@ export class MessagesGateway implements OnGatewayInit {
 		client.disconnect();
 		return;
 	}
+
+	@SubscribeMessage('silentUser')
+	async silentUser(@MessageBody('useToSilent') useToSilent, @MessageBody('channel') channel, @ConnectedSocket() client: Socket)
+	{
+	//	const sockets = await this.server.in(channel).fetchSockets();
+
+		const match = await this.messagesService.userChannelRep.findOne({
+			where : {nickname: useToSilent}
+		})
+
+	/*	for(let socket of sockets)
+		{
+			if (socket.id == match.socketId)
+			{
+				console.log(socket.id+ "||||"+ match.socketId)
+				socket.disconnect(channel);
+			}
+		}
+	}
+	*/
+		if (match.silenzed == false)
+		{
+			return this.messagesService.userChannelRep.update(match.id, {silenzed: true});
+		}
+		return ;
+	}
+	/*
+		terminare il silentUser, implementare:
+		- il check per il controllo dell'admin
+		- il timer 
+
+		imolementare il ban
+	*/
 }

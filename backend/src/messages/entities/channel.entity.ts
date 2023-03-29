@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/ban-types */
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import UserChannel from './user-channel.entity';
 
 export class Partecipant {
 	public users: string;
@@ -9,7 +10,7 @@ export class Partecipant {
 	}
 }
 
-@Entity()
+@Entity('Channel')
 class Channel {
 	@PrimaryGeneratedColumn()
 	id: number;
@@ -28,5 +29,8 @@ class Channel {
 
 	@Column({ nullable: true })
 	Password?: string;
+
+	@OneToMany(() => UserChannel, (userChannel: UserChannel) => userChannel.channel)
+	userChannel?: UserChannel[];
 }
 export default Channel;

@@ -53,4 +53,9 @@ export class MessagesController {
 	getAllChannels() {
 		return this.messageService.findAllChannels();
 	}
+
+	@Get('all-user-channel')
+	getAllUserChannel() {
+		return this.messageService.userChannelRep.find({ relations: ['channel'] });
+	}
 }
