@@ -14,7 +14,7 @@ export class Auth42Strategy extends PassportStrategy(Strategy) {
 		super({
 			clientID: process.env.clientID, //'u-s4t2ud-486c6f85713f6717cf7e6d9f24b1341dda235d72c48733f53ed404b038f1b787',
 			clientSecret: process.env.clientSecret, //'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',
-			callbackURL: process.env.callbackURL, //"http://localhost:3000/",
+			callbackURL: "http://localhost:3000/auth", //"http://localhost:3000/",
 			scope: ['public'],
 			provider: '42/redirect',
 		});
