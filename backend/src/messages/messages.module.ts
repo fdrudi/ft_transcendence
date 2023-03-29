@@ -7,9 +7,10 @@ import { UsersService } from 'src/users/users.service';
 import RequestWithUser from 'src/auth/interface/requestWithUser.interface';
 import { MessagesController } from './messages.controller';
 import Channel from './entities/channel.entity';
+import UserChannel from './entities/user-channel.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Channel])],
+	imports: [TypeOrmModule.forFeature([Channel, UserChannel])],
 	controllers: [MessagesController],
 	providers: [MessagesGateway, MessagesService],
 })

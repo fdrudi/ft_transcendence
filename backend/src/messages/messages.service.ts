@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { Injectable } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { UpdateMessageDto } from './dto/update-message.dto';
 import Channel, { Partecipant } from './entities/channel.entity';
 import Message from './entities/message.entity';
 import { Repository } from 'typeorm';
+import UserChannel from './entities/user-channel.entity';
+import { CreateUserChannelDto } from './dto/create-user-channel.dto';
 
 @Injectable()
 export class MessagesService {
@@ -16,7 +19,7 @@ export class MessagesService {
 	messages: Message[] = [];
 	clientToUser = {};
 	// channels : Channel[] = [];
-	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>) {}
+	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>, @InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>) {}
 
 	identify(name: string, clientId: string) {
 		this.clientToUser[clientId] = name;
@@ -97,6 +100,29 @@ export class MessagesService {
 		}
 
 		//  const user = await this.channelRep.findOne({where : {Partecipant: name}});
+	}
+	createUserChannel(ch: Channel, obj: any)
+	{
+		const userChannelRep = {
+			id:obj.id,
+			nickname : obj.nickname,
+			channel: ch,
+			socketId: obj.socketId
+		}
+		this.userChannelRep.create(userChannelRep);
+		this.userChannelRep.save(userChannelRep);
+		return userChannelRep;
+	}
+
+	async checkIfSilenzed(socketId:string)
+	{
+		const user = await this.userChannelRep.findOne({where: {
+			socketId: socketId
+		}});
+
+		if (user.silenzed == true)
+			return true;
+		return false;
 	}
 
 	/*
