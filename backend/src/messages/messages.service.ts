@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -11,14 +11,12 @@ import Message from './entities/message.entity';
 import { Repository } from 'typeorm';
 import UserChannel from './entities/user-channel.entity';
 import { CreateUserChannelDto } from './dto/create-user-channel.dto';
+import { time } from 'console';
 
 @Injectable()
 export class MessagesService {
-	//ingettare lo userservice
-	//attraverso i cookie recuperare lo user che sta interagendo
 	messages: Message[] = [];
 	clientToUser = {};
-	// channels : Channel[] = [];
 	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>, @InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>) {}
 
 	identify(name: string, clientId: string) {
@@ -83,8 +81,6 @@ export class MessagesService {
 
 	async checkPassword(password: string, channel: string) {
 		const channelRep = await this.findChannel(channel);
-		// console.log(channelRep.Password);
-		//  console.log(password)
 		if (password == channelRep.Password) return true;
 		return false;
 	}
@@ -107,7 +103,9 @@ export class MessagesService {
 			id:obj.id,
 			nickname : obj.nickname,
 			channel: ch,
-			socketId: obj.socketId
+			socketId: obj.socketId,
+			admin: obj.admin,
+			channelId: obj.id
 		}
 		this.userChannelRep.create(userChannelRep);
 		this.userChannelRep.save(userChannelRep);
@@ -119,22 +117,107 @@ export class MessagesService {
 		const user = await this.userChannelRep.findOne({where: {
 			socketId: socketId
 		}});
-
-		if (user.silenzed == true)
+		if (this.checkMuteTimer(user.muteDate, user.muteTimer) == false)
+		{
+			user.mute = false;
+			user.muteDate = "";
+			user.muteTimer = 0;
+			this.userChannelRep.update(user.id, {
+				mute:false,
+				muteDate:"",
+				muteTimer:0
+			})
+		}
+		if (user.mute == true)
 			return true;
 		return false;
 	}
 
-	/*
-  async getByEmail(_email: string) {
-    const user = await this.userRep.findOne({
-      where: {
-        email: _email,
-      },
-    });
-    if (user)
-      return user;
-    return undefined;
-  }
-  */
+	async getUserChannelById(name:string, channelId:number)
+	{
+		try {
+			const user = await this.userChannelRep.findOne({where: {
+				channelId: channelId, nickname: name
+			}})
+			return user;
+		} catch (error) {
+			throw NotFoundException
+		}
+	}
+
+	checkMuteTimer(muteDate: string, muteTimer:number)
+	{
+		const prevdate = (new Date(muteDate).getTime() / 1000) / 60;
+		const now = (new Date().getTime() / 1000) / 60;
+		const timediff = now - prevdate;
+		console.log(timediff);
+		console.log(muteTimer);
+		if (timediff >= muteTimer && muteDate != "")
+		{
+			return false;
+		}
+		console.log(`mute timer expires in : ${timediff-muteTimer * -1}min`);
+		return true;
+	}
+
+	async muteOff(userToUnMute:string, channel:string, admin:string)
+	{
+		const channelToFind = await this.channelRep.findOne({where: {
+			ChannelName: channel, 
+		}}) 
+
+		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
+		if ((await boolAdmin).admin == true)
+		{
+			const match = await this.userChannelRep.findOne({
+				where : {nickname: userToUnMute, channelId: channelToFind.id }
+			})
+
+			if (match.mute == true)
+			{
+				console.log(`admin: ${admin} leaved mute option to ${match.nickname}`);
+				return  await this.userChannelRep.update(match.id, {mute: false, 
+													muteDate: "",
+													muteTimer: 0
+												});
+			}
+			else
+				console.log(`user ${match.nickname} is not muted`);
+		}
+		else
+			console.log(`user: ${admin} is not an admin`);
+		return;
+	}
+
+	async muteOn(useToSilent:string, channel:string, admin:string, timer:number)
+	{
+		const channelToFind = await this.channelRep.findOne({where: {
+			ChannelName: channel, 
+		}}) 
+
+		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
+		
+		if ((await boolAdmin).admin == true)
+		{
+			const match = await this.userChannelRep.findOne({
+				where : {nickname: useToSilent, channelId: channelToFind.id }
+			})
+			if (this.checkMuteTimer(match.muteDate, match.muteTimer) == false)
+				return this.muteOff(useToSilent, channel, admin);
+			if (match.mute == false)
+			{
+				const timedate = new Date();
+				console.log(`admin: ${admin} silenced ${match.nickname}`);
+				return this.userChannelRep.update(match.id, {mute: true, 
+													muteDate: timedate.toString(),
+													muteTimer: timer
+												});
+			}
+			else
+				console.log(`${match.nickname} is already silenced`);
+		}
+		else
+			console.log(`user: ${admin} is not an admin`);
+		return;
+	}
 }
