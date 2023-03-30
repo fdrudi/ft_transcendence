@@ -60,26 +60,19 @@ export class MessagesGateway implements OnGatewayInit {
 	constructor(private readonly messagesService: MessagesService) {}
 	afterInit(server: any) {
 		this.server = server;
-		//   console.log(this.user.user.email)
 		this.server.use((socket, next) => {
-			/// console.log(socket.handshake.headers)
 			next();
 		});
 	}
 
-	/*
-    creare un emit che invia messaggi solo ai partecipanti del canale 
-  */
-
 	@SubscribeMessage('createMessage')
 	async create(@MessageBody() createMessageDto: CreateMessageDto, @ConnectedSocket() client: Socket) {
-		if (await this.messagesService.checkIfSilenzed(client.id.toString()) == true) return;
+
+		if (await this.messagesService.checkIfSilenzed(client.id.toString()) == true)return false;
 		const message = this.messagesService.create(createMessageDto, client.id);
 		this.server.to(createMessageDto.channel).emit('message', message);
-		// this.server.emit('message', message);
-		//client.to(channel).emit('message', message);
 		console.log(`l'utente ${createMessageDto.name} scrive nel channel: ${createMessageDto.channel}`);
-		return message; //client.to(createMessageDto.channel).emit('message', message);
+		return message;
 	}
 
 	/*
@@ -110,7 +103,13 @@ export class MessagesGateway implements OnGatewayInit {
 				Password: password,
 			});
 
-			this.messagesService.createUserChannel(ch, {nickname: ch.Owner, channel:ch, id:ch.id, socketId: client.id})
+			this.messagesService.createUserChannel(ch,{
+				nickname: ch.Owner,
+				channel:ch, id:ch.id,
+				socketId: client.id,
+				admin:true,
+				channelId: ch.id,
+			})
 
 			console.log(`L' utente: ${name} ha creto il canale ${channel}`);
 			client.join(channel);
@@ -161,14 +160,18 @@ export class MessagesGateway implements OnGatewayInit {
 	}
 
 	@SubscribeMessage('silentUser')
-	async silentUser(@MessageBody('useToSilent') useToSilent, @MessageBody('channel') channel, @ConnectedSocket() client: Socket)
+	async silentUser(@MessageBody('useToSilent') useToSilent,
+						@MessageBody('channel') channel,
+						@MessageBody('name') admin,
+						@MessageBody('timer') timer:number,
+						@ConnectedSocket() client: Socket)
 	{
 	//	const sockets = await this.server.in(channel).fetchSockets();
 
-		const match = await this.messagesService.userChannelRep.findOne({
+	/*	const match = await this.messagesService.userChannelRep.findOne({
 			where : {nickname: useToSilent}
 		})
-
+*/
 	/*	for(let socket of sockets)
 		{
 			if (socket.id == match.socketId)
@@ -179,17 +182,27 @@ export class MessagesGateway implements OnGatewayInit {
 		}
 	}
 	*/
-		if (match.silenzed == false)
+/*		if (match.silenzed == false)
 		{
 			return this.messagesService.userChannelRep.update(match.id, {silenzed: true});
 		}
 		return ;
+		*/
+
+		return await this.messagesService.muteOn(useToSilent, channel, admin, timer);
+	}
+
+	@SubscribeMessage('muteOff')
+	async muteOff(@MessageBody('useToSilent') useToSilent,
+						@MessageBody('channel') channel,
+						@MessageBody('name') admin,
+						@ConnectedSocket() client: Socket)
+	{
+		return await this.messagesService.muteOff(useToSilent, channel, admin);
 	}
 	/*
-		terminare il silentUser, implementare:
-		- il check per il controllo dell'admin
-		- il timer 
-
-		imolementare il ban
+		imolementare il ban:
+		- creare un ban permanente o a tempo
+		- nel ban una persona non e in grado rientrare nel canale
 	*/
 }
