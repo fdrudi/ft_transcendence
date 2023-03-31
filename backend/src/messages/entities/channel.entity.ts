@@ -30,6 +30,9 @@ class Channel {
 	@Column({ nullable: true })
 	Password?: string;
 
+	@Column('simple-array')
+	BanList: string[];
+
 	@OneToMany(() => UserChannel, (userChannel: UserChannel) => userChannel.channel)
 	userChannel?: UserChannel[];
 }

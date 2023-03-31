@@ -22,8 +22,20 @@ class UserChannel
     @Column({default:false})
     mute: boolean;
 
+    @Column({default:false})
+    ban: boolean;
+
+    @Column({default:0})
+    banTimer?: number;
+
+    @Column({default:""})
+    banDate?: string;
+
     @Column({default:0})
     muteTimer?: number;
+
+    @Column({default: true})
+    status?: boolean;
 
     @Column({default:""})
     muteDate?: string;

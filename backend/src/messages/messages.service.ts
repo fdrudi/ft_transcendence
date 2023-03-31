@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-empty-function */
@@ -12,6 +13,7 @@ import { Repository } from 'typeorm';
 import UserChannel from './entities/user-channel.entity';
 import { CreateUserChannelDto } from './dto/create-user-channel.dto';
 import { time } from 'console';
+import { Server, Socket } from 'socket.io';
 
 @Injectable()
 export class MessagesService {
@@ -47,6 +49,7 @@ export class MessagesService {
 			Admin: createChannelDto.Admin,
 			Partecipant: createChannelDto.Partecipant,
 			Password: createChannelDto.Password,
+			BanList: createChannelDto.BanList,
 		};
 		this.channelRep.create(channel);
 		this.channelRep.save(channel);
@@ -65,6 +68,12 @@ export class MessagesService {
 		const newAdmin = Admin.concat(username);
 		console.log(`new partecipant joined chat\nchat-list:${newAdmin}`);
 		return this.channelRep.update(channelId, { Admin: newAdmin });
+	}
+
+	async addUserToBanList(channel: string, username: string) {
+		const ban: string[] = (await this.findChannel(channel)).BanList;
+		const newBanList = ban.concat(username);
+		return this.channelRep.update((await this.findChannel(channel)).id, { BanList: newBanList });
 	}
 
 	findAllChannels() {
@@ -94,8 +103,20 @@ export class MessagesService {
 				console.log(`Partecipant: ${name} gone from Room: ${channel}`);
 			}
 		}
+	}
 
-		//  const user = await this.channelRep.findOne({where : {Partecipant: name}});
+	async checkNameInChannel(channel:string, name:string)
+	{
+		const ch = await this.channelRep.findOne({where: {
+			ChannelName: channel
+		}})
+
+		for(let p of ch.Partecipant)
+		{
+			if (p == name)
+				return true;
+		}
+		return false;
 	}
 	createUserChannel(ch: Channel, obj: any)
 	{
@@ -105,31 +126,30 @@ export class MessagesService {
 			channel: ch,
 			socketId: obj.socketId,
 			admin: obj.admin,
-			channelId: obj.id
+			channelId: obj.id,
 		}
 		this.userChannelRep.create(userChannelRep);
 		this.userChannelRep.save(userChannelRep);
 		return userChannelRep;
 	}
 
-	async checkIfSilenzed(socketId:string)
+	async checkIfSilenzed(id:string)
 	{
 		const user = await this.userChannelRep.findOne({where: {
-			socketId: socketId
+			socketId: id
 		}});
-		if (this.checkMuteTimer(user.muteDate, user.muteTimer) == false)
+		if (user.mute != false)
 		{
-			user.mute = false;
-			user.muteDate = "";
-			user.muteTimer = 0;
-			this.userChannelRep.update(user.id, {
-				mute:false,
-				muteDate:"",
-				muteTimer:0
-			})
-		}
-		if (user.mute == true)
+			if (this.checkMuteTimer(user.muteDate, user.muteTimer) == false)
+			{
+				this.userChannelRep.update(user.id, {
+					mute:false,
+					muteDate:"",
+					muteTimer:0
+				})
+			}
 			return true;
+		}
 		return false;
 	}
 
@@ -150,13 +170,26 @@ export class MessagesService {
 		const prevdate = (new Date(muteDate).getTime() / 1000) / 60;
 		const now = (new Date().getTime() / 1000) / 60;
 		const timediff = now - prevdate;
-		console.log(timediff);
-		console.log(muteTimer);
 		if (timediff >= muteTimer && muteDate != "")
 		{
 			return false;
 		}
 		console.log(`mute timer expires in : ${timediff-muteTimer * -1}min`);
+		return true;
+	}
+
+	checkBanTimer(banDate: string, banTimer:number)
+	{
+		const prevdate = (new Date(banDate).getTime() / 1000) / 60;
+		const now = (new Date().getTime() / 1000) / 60;
+		const timediff = now - prevdate;
+		console.log(timediff);
+		console.log(banTimer);
+		if (timediff >= banTimer && banDate != "")
+		{
+			return false;
+		}
+		console.log(`ban timer expires in : ${timediff-banTimer * -1}min`);
 		return true;
 	}
 
@@ -219,5 +252,101 @@ export class MessagesService {
 		else
 			console.log(`user: ${admin} is not an admin`);
 		return;
+	}
+
+	async banUser(userToBan: string, channel: string, admin: string, timer:number, server: Server)
+	{
+		const channelToFind = await this.channelRep.findOne({where: {
+			ChannelName: channel, 
+		}}) 
+
+		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
+		
+		if ((await boolAdmin).admin == true)
+		{
+			const match = await this.userChannelRep.findOne({
+				where : {nickname: userToBan, channelId: channelToFind.id }
+			})
+			if (match.ban == false)
+			{
+				const timedate = new Date();
+				console.log(`admin: ${admin} ban ${match.nickname}`);
+				this.userChannelRep.update(match.id, {ban: true, 
+													banDate: timedate.toString(),
+													banTimer: timer,
+													status:false
+												});
+				const sockets = await server.in(channel).fetchSockets();
+				this.addUserToBanList(channel, userToBan)
+				for(let socket of sockets)
+				{
+					if (socket.id == match.socketId)
+					{
+						console.log("socket id: "+ match.nickname);
+						socket.leave(channel);
+						return;
+					}
+				}
+			}
+			else
+				console.log(`${match.nickname} is already banned`);
+		}
+		else
+			console.log(`user: ${admin} is not an admin`);
+		return;
+	}
+
+	async banOff(userToBan:string, channel:string, admin:string)
+	{
+		const channelToFind = await this.channelRep.findOne({where: {
+			ChannelName: channel, 
+		}}) 
+
+		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
+		if ((await boolAdmin).admin == true)
+		{
+			const match = await this.userChannelRep.findOne({
+				where : {nickname: userToBan, channelId: channelToFind.id }
+			})
+
+			if (match.ban == true)
+			{
+				console.log(`admin: ${admin} leaved ban option to ${match.nickname}`);
+				const index = channelToFind.BanList.indexOf(match.nickname);
+				await channelToFind.BanList.splice(index, 1);
+				await this.channelRep.update(channelToFind.id, {
+					BanList: channelToFind.BanList
+				})
+				return  await this.userChannelRep.update(match.id, {ban: false, 
+													banDate: "",
+													banTimer: 0,
+													status:false
+												});
+			}
+			else
+				console.log(`user ${match.nickname} is not banned`);
+		}
+		else
+			console.log(`user: ${admin} is not an admin`);
+		return;
+	}
+
+	async setStatus(bool: boolean, userId:number)
+	{
+		console.log("in setStatus: is "+ userId )
+		return await this.userChannelRep.update(userId, {
+			status: bool
+		})
+
+	}
+
+	async getStatus(userId:number)
+	{
+		const user= await this.userChannelRep.findOne({where: {
+			id: userId
+		}})
+		if (user.status == false)
+			return await false;
+		return await true;
 	}
 }
