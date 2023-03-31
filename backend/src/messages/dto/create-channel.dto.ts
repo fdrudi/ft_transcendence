@@ -6,6 +6,7 @@ export class CreateChannelDto extends Channel {
 		super(),
 			(this.ChannelName = obj.ChannelName),
 			(this.Owner = obj.Owner),
+			(this.BanList = obj.BanList),
 			(this.Partecipant = obj.Partecipant),
 			(this.id = obj.id),
 			(this.Admin = obj.Admin),

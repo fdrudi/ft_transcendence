@@ -68,7 +68,31 @@ export class MessagesGateway implements OnGatewayInit {
 	@SubscribeMessage('createMessage')
 	async create(@MessageBody() createMessageDto: CreateMessageDto, @ConnectedSocket() client: Socket) {
 
-		if (await this.messagesService.checkIfSilenzed(client.id.toString()) == true)return false;
+		const clientId = await client.id.toString();
+		const user = await this.messagesService.userChannelRep.findOne({where: {
+			socketId: clientId
+		}});
+		const channel = await this.messagesService.channelRep.findOne({where: {
+			ChannelName: createMessageDto.channel
+		}});
+
+	//	console.log(clientId + "|||" + user.socketId);
+		if (await this.messagesService.getStatus(user.id) == false)
+		{
+			console.log(`user ${user.nickname} is not active`);
+			return;
+		}
+		if (await (user.ban) == true ) 
+		{
+			if (this.messagesService.checkBanTimer(user.banDate, user.banTimer) == false)
+			{
+				this.messagesService.banOff(user.nickname, channel.ChannelName, channel.Admin[0]);
+			}
+			else
+				return false;
+		}
+		//if (await this.messagesService.checkBanTimer(user.banDate, user.banTimer) == false) return false;
+		if (await this.messagesService.checkIfSilenzed(await clientId) == true) return false;
 		const message = this.messagesService.create(createMessageDto, client.id);
 		this.server.to(createMessageDto.channel).emit('message', message);
 		console.log(`l'utente ${createMessageDto.name} scrive nel channel: ${createMessageDto.channel}`);
@@ -101,6 +125,7 @@ export class MessagesGateway implements OnGatewayInit {
 				Admin: name,
 				Partecipant: name,
 				Password: password,
+				BanList: [],
 			});
 
 			this.messagesService.createUserChannel(ch,{
@@ -118,14 +143,13 @@ export class MessagesGateway implements OnGatewayInit {
 		return undefined;
 	}
 
-	/*
-    in join cerca un canale se esiste avviene il join altrimenti error
-  */
 	@SubscribeMessage('join')
 	async joinRoom(@MessageBody('name') name: string, @MessageBody('Password') password: string, @MessageBody('channel') channel: string, @ConnectedSocket() client: Socket) {
 		const toFind = await this.messagesService.channelRep.findOne({
 			where: { ChannelName: channel },
 		});
+		const user = await this.messagesService.getUserChannelById(name, toFind.id);
+
 		if (toFind != undefined) {
 			if (toFind.Password != null) {
 				console.log(toFind.Password);
@@ -135,6 +159,34 @@ export class MessagesGateway implements OnGatewayInit {
 					return null;
 				}
 			}
+			if (await this.messagesService.checkNameInChannel(channel, name) == true)
+			{
+				console.log(user.nickname);
+				let banlist = toFind.BanList;
+				for(let ban of banlist)
+				{
+					if (ban == user.nickname)
+					{
+						if (this.messagesService.checkBanTimer(user.banDate, user.banTimer) == false)
+						{
+							this.messagesService.banOff(user.nickname, toFind.ChannelName, toFind.Admin[0]);
+							break;
+						}
+						else
+						{
+							console.log(`user ${user.nickname} is banned`)
+							return;
+						}
+					}
+				}
+					client.join(channel);
+					await this.messagesService.userChannelRep.update((await user).id,{
+						socketId:  client.id.toString(), status:true
+				})
+					console.log(`user : ${name} is back to channel: ${channel}`);
+					return name;
+			}
+			this.messagesService.setStatus(true, user.id);
 			this.messagesService.addUserToChannel(channel, name, (await toFind).id);
 			this.messagesService.createUserChannel(toFind, {nickname: name, channel:toFind, socketId: client.id})
 			client.join(channel);
@@ -153,9 +205,12 @@ export class MessagesGateway implements OnGatewayInit {
 
 	@SubscribeMessage('leaveChannel')
 	async leaveChannel(@MessageBody('name') name, @MessageBody('channel') channel, @ConnectedSocket() client: Socket) {
-		await this.messagesService.removeUser(name, channel);
+		console.log("disconnecting...");
+		 const user = await this.messagesService.userChannelRep.findOne({where:{
+			nickname: name
+		}})
+		await this.messagesService.setStatus(false, (await user).id);
 		client.leave(channel);
-		client.disconnect();
 		return;
 	}
 
@@ -166,29 +221,6 @@ export class MessagesGateway implements OnGatewayInit {
 						@MessageBody('timer') timer:number,
 						@ConnectedSocket() client: Socket)
 	{
-	//	const sockets = await this.server.in(channel).fetchSockets();
-
-	/*	const match = await this.messagesService.userChannelRep.findOne({
-			where : {nickname: useToSilent}
-		})
-*/
-	/*	for(let socket of sockets)
-		{
-			if (socket.id == match.socketId)
-			{
-				console.log(socket.id+ "||||"+ match.socketId)
-				socket.disconnect(channel);
-			}
-		}
-	}
-	*/
-/*		if (match.silenzed == false)
-		{
-			return this.messagesService.userChannelRep.update(match.id, {silenzed: true});
-		}
-		return ;
-		*/
-
 		return await this.messagesService.muteOn(useToSilent, channel, admin, timer);
 	}
 
@@ -200,9 +232,27 @@ export class MessagesGateway implements OnGatewayInit {
 	{
 		return await this.messagesService.muteOff(useToSilent, channel, admin);
 	}
+
+	@SubscribeMessage('banUser')
+	async banUser(@MessageBody('userToBan') userToBan,
+						@MessageBody('channel') channel,
+						@MessageBody('name') admin,
+						@MessageBody('timer') timer:number,
+						@ConnectedSocket() client: Socket)
+	{
+		return  await this.messagesService.banUser(userToBan, channel, admin, timer, this.server);
+	}
+
+	@SubscribeMessage('banOff')
+	async banOff(@MessageBody('userToUnBan') userToUnBan,
+						@MessageBody('channel') channel,
+						@MessageBody('name') admin,
+						@ConnectedSocket() client: Socket)
+	{
+		return  await this.messagesService.banOff(userToUnBan, channel, admin);
+	}
 	/*
-		imolementare il ban:
-		- creare un ban permanente o a tempo
-		- nel ban una persona non e in grado rientrare nel canale
+		TODO: ban, silenziatore e disconnect DONE!
+		- fare un refactory del codice, ed iniziare ad implementare i directMessage
 	*/
 }
