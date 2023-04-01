@@ -1,22 +1,13 @@
 // StyledPaymentOptions.tsx
+import theme from '@/themes/Style';
 import React from 'react';
 import styled from 'styled-components';
 
 const Button = styled.button`
-  height: 55px;
-  background: #f2f2f2;
+  padding: 17px 40px;
+  background: ${theme.color.cloud};
   border-radius: 11px;
-  padding: 0;
   border: 0;
-  outline: none;
-
-  svg {
-    height: 18px;
-  }
-
-  &:last-child svg {
-    height: 22px;
-  }
 `;
 
 interface Props {

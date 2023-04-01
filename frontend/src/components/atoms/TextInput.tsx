@@ -5,7 +5,7 @@ import styled from 'styled-components';
 const InputGroup = styled.div`
   font-family: ${theme.font.main};
   margin: 1em 0 1em 0;
-  width: 280px;
+  width: 100%;
   position: relative;
 `;
 

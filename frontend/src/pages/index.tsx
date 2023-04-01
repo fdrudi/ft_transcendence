@@ -1,13 +1,29 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
-import { ButtonText, TextInput } from '@/components/atoms'
-import { GoogleIcon, Icon42 } from '../../public/Icons'
+import Head from 'next/head';
+import Image from 'next/image';
+import { Inter } from 'next/font/google';
+import styles from '@/styles/Home.module.css';
+import { ButtonIcon, ButtonText, TextInput, TextSeparator } from '@/components/atoms';
+import { GoogleIcon, Icon42 } from '../../public/Icons';
+import { ModalTemplate } from '@/components/templates';
+import styled from 'styled-components';
+import { Box } from '@chakra-ui/react';
+
+const AuthOptions = styled.div`
+  width: calc(100% - 40px);
+  display: grid;
+  grid-template-columns: 33% 34% 33%;
+  gap: 20px;
+  padding: 10px;
+`;
 
 const inter = Inter({ subsets: ['latin'] })
 
-export default function Home() {
+const Home: React.FC = () => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    // Formular submission action here!
+  };
+
   return (
     <>
       <Head>
@@ -17,11 +33,28 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-          <ButtonText text="test" />
-          <TextInput label="Name" />
-          <GoogleIcon />
-          <Icon42 />
+        <ModalTemplate>
+          <AuthOptions>
+            <ButtonIcon>
+              <GoogleIcon />
+            </ButtonIcon>
+            <ButtonIcon>
+              <Icon42 />
+            </ButtonIcon>
+            <ButtonIcon>
+              <GoogleIcon />
+            </ButtonIcon>
+          </AuthOptions>
+          <TextSeparator text="Or create an account" />
+          <Box>
+            <TextInput label="Email" />
+            <TextInput label="Password" />
+          </Box>
+          <ButtonText text="Login" />
+        </ModalTemplate>
       </main>
     </>
-  )
-}
+  );
+};
+
+export default Home;
