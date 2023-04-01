@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/adjacent-overload-signatures */
 /* eslint-disable prefer-const */
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/ban-types */
@@ -6,20 +7,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
-import Channel, { Partecipant } from './entities/channel.entity';
+import Channel from './entities/channel.entity';
 import Message from './entities/message.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import UserChannel from './entities/user-channel.entity';
-import { CreateUserChannelDto } from './dto/create-user-channel.dto';
-import { time } from 'console';
 import { Server, Socket } from 'socket.io';
 
 @Injectable()
 export class MessagesService {
 	messages: Message[] = [];
 	clientToUser = {};
-	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>, @InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>) {}
+	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>,
+				@InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>) {}
 
 	identify(name: string, clientId: string) {
 		this.clientToUser[clientId] = name;
@@ -41,10 +41,70 @@ export class MessagesService {
 		return message;
 	}
 
+	async createMessage(createMessageDto: CreateMessageDto, client: Socket, server:Server)
+	{
+		const user =  await this.userChannelRep.findOne({where: {
+			socketId: client.id.toString()
+		}});
+		const channel =  await this.channelRep.findOne({where: {
+			ChannelName: createMessageDto.channel
+		}});
+
+		if ( user.ban == true ) 
+		{
+			if (this.checkBanTimer(user.banDate, user.banTimer) == false)
+				this.banOff(user.nickname, channel.ChannelName,channel.Admin[0]);
+			else
+				return false;
+		}
+		if (await this.checkMute(user.socketId) == true) return false;
+		const message =  this.create(createMessageDto, client.id);
+		server.to(createMessageDto.channel).emit('message', message);
+		console.log(`User: ${createMessageDto.name} write in: ${createMessageDto.channel}`);
+		return  message;
+	}
+
+	async createRoom(channel: string, name: string, password: string,client: Socket)
+	{
+		const toFind = await this.channelRep.findOne({
+			where: { ChannelName: channel },
+		});
+		if (toFind == undefined) {
+			if (password != null) {
+				const saltOrRounds = 10;
+				const hash = await bcrypt.hash(password, saltOrRounds);
+				password = hash;
+			}
+			
+			const ch = this.createChannel({
+				id: 0,
+				ChannelName: channel,
+				Owner: name,
+				Admin: [name],
+				Partecipant: [name],
+				Password: password,
+				BanList: [],
+			});
+
+			this.createUserChannel(ch,{
+				nickname: ch.Owner,
+				channel:ch, id:ch.id,
+				socketId: client.id,
+				admin:true,
+				channelId: ch.id,
+			})
+
+			console.log(`L' utente: ${name} ha creto il canale ${channel}`);
+			client.join(channel);
+			return name;
+		}
+		return undefined;
+	}
+
 	createChannel(createChannelDto: CreateChannelDto) {
 		const channel = {
 			id: 0,
-			ChannelName: createChannelDto.ChannelName, //this.clientToUser[clientId],
+			ChannelName: createChannelDto.ChannelName,
 			Owner: createChannelDto.Owner,
 			Admin: createChannelDto.Admin,
 			Partecipant: createChannelDto.Partecipant,
@@ -54,6 +114,60 @@ export class MessagesService {
 		this.channelRep.create(channel);
 		this.channelRep.save(channel);
 		return channel;
+	}
+
+	async joinerRoom(name: string, password: string, channel: string, client: Socket)
+	{
+		const toFind = await this.channelRep.findOne({
+			where: { ChannelName: channel },
+		});
+		const user = await this.userChannelRep.findOne({where: {
+				nickname:name, channelId : toFind.id
+		}})
+
+		if (toFind != undefined) {
+			if (toFind.Password != null) {
+				console.log(toFind.Password);
+				const decrypt = await bcrypt.compare(password, toFind.Password);
+				if (decrypt == false) {
+					console.log('password: incorrect!');
+					return null;
+				}
+			}
+			if (await this.checkNameInChannel(channel, name) == true)
+			{
+				console.log(user.nickname);
+				let banlist = toFind.BanList;
+				for(let ban of banlist)
+				{
+					if (ban == user.nickname)
+					{
+						if (this.checkBanTimer(user.banDate, user.banTimer) == false)
+						{
+							this.banOff(user.nickname, toFind.ChannelName, toFind.Admin[0]);
+							break;
+						}
+						else
+						{
+							console.log(`user ${user.nickname} is banned`)
+							return;
+						}
+					}
+				}
+					client.join(channel);
+					await this.userChannelRep.update((await user).id,{
+						socketId:  client.id.toString()
+				})
+					console.log(`user : ${name} is back to channel: ${channel}`);
+					return name;
+			}
+			this.addUserToChannel(channel, name, (await toFind).id);
+			this.createUserChannel(toFind, {nickname: name, channel:toFind, socketId: client.id})
+			client.join(channel);
+			return name;
+		}
+		console.log('channel does not found');
+		return;
 	}
 
 	async addUserToChannel(channel: string, username: string, channelId: number) {
@@ -133,7 +247,7 @@ export class MessagesService {
 		return userChannelRep;
 	}
 
-	async checkIfSilenzed(id:string)
+	async checkMute(id:string)
 	{
 		const user = await this.userChannelRep.findOne({where: {
 			socketId: id
@@ -159,7 +273,7 @@ export class MessagesService {
 			const user = await this.userChannelRep.findOne({where: {
 				channelId: channelId, nickname: name
 			}})
-			return user;
+			return  await user;
 		} catch (error) {
 			throw NotFoundException
 		}
@@ -171,9 +285,7 @@ export class MessagesService {
 		const now = (new Date().getTime() / 1000) / 60;
 		const timediff = now - prevdate;
 		if (timediff >= muteTimer && muteDate != "")
-		{
 			return false;
-		}
 		console.log(`mute timer expires in : ${timediff-muteTimer * -1}min`);
 		return true;
 	}
@@ -183,12 +295,8 @@ export class MessagesService {
 		const prevdate = (new Date(banDate).getTime() / 1000) / 60;
 		const now = (new Date().getTime() / 1000) / 60;
 		const timediff = now - prevdate;
-		console.log(timediff);
-		console.log(banTimer);
 		if (timediff >= banTimer && banDate != "")
-		{
 			return false;
-		}
 		console.log(`ban timer expires in : ${timediff-banTimer * -1}min`);
 		return true;
 	}
@@ -228,26 +336,25 @@ export class MessagesService {
 			ChannelName: channel, 
 		}}) 
 
-		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
+		const boolAdmin = await this.getUserChannelById(admin, channelToFind.id);
 		
 		if ((await boolAdmin).admin == true)
 		{
-			const match = await this.userChannelRep.findOne({
-				where : {nickname: useToSilent, channelId: channelToFind.id }
-			})
-			if (this.checkMuteTimer(match.muteDate, match.muteTimer) == false)
-				return this.muteOff(useToSilent, channel, admin);
+			const match =  await this.getUserChannelById(useToSilent, channelToFind.id);
+			if (match.mute == true)
+				if (this.checkMuteTimer(match.muteDate, match.muteTimer) == false)
+					this.muteOff(useToSilent, channel, admin);
 			if (match.mute == false)
 			{
 				const timedate = new Date();
-				console.log(`admin: ${admin} silenced ${match.nickname}`);
+				console.log(`admin: ${admin} mute ${match.nickname}`);
 				return this.userChannelRep.update(match.id, {mute: true, 
 													muteDate: timedate.toString(),
 													muteTimer: timer
 												});
 			}
 			else
-				console.log(`${match.nickname} is already silenced`);
+				console.log(`${match.nickname} is already muted`);
 		}
 		else
 			console.log(`user: ${admin} is not an admin`);
@@ -259,9 +366,7 @@ export class MessagesService {
 		const channelToFind = await this.channelRep.findOne({where: {
 			ChannelName: channel, 
 		}}) 
-
 		const boolAdmin = this.getUserChannelById(admin, channelToFind.id);
-		
 		if ((await boolAdmin).admin == true)
 		{
 			const match = await this.userChannelRep.findOne({
@@ -274,7 +379,6 @@ export class MessagesService {
 				this.userChannelRep.update(match.id, {ban: true, 
 													banDate: timedate.toString(),
 													banTimer: timer,
-													status:false
 												});
 				const sockets = await server.in(channel).fetchSockets();
 				this.addUserToBanList(channel, userToBan)
@@ -320,7 +424,6 @@ export class MessagesService {
 				return  await this.userChannelRep.update(match.id, {ban: false, 
 													banDate: "",
 													banTimer: 0,
-													status:false
 												});
 			}
 			else
@@ -329,24 +432,5 @@ export class MessagesService {
 		else
 			console.log(`user: ${admin} is not an admin`);
 		return;
-	}
-
-	async setStatus(bool: boolean, userId:number)
-	{
-		console.log("in setStatus: is "+ userId )
-		return await this.userChannelRep.update(userId, {
-			status: bool
-		})
-
-	}
-
-	async getStatus(userId:number)
-	{
-		const user= await this.userChannelRep.findOne({where: {
-			id: userId
-		}})
-		if (user.status == false)
-			return await false;
-		return await true;
 	}
 }
