@@ -4,3 +4,7 @@ const nextConfig = {
 }
 
 module.exports = nextConfig
+
+// config for next-images
+const withImages = require("next-images");
+module.exports = withImages();
