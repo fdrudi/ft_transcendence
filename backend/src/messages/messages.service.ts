@@ -13,13 +13,15 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import UserChannel from './entities/user-channel.entity';
 import { Server, Socket } from 'socket.io';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class MessagesService {
 	messages: Message[] = [];
 	clientToUser = {};
 	constructor(@InjectRepository(Channel) public channelRep: Repository<Channel>,
-				@InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>) {}
+				@InjectRepository(UserChannel) public userChannelRep: Repository<UserChannel>,
+				private userService: UsersService) {}
 
 	identify(name: string, clientId: string) {
 		this.clientToUser[clientId] = name;
@@ -36,6 +38,7 @@ export class MessagesService {
 			name: createMessageDto.name, //this.clientToUser[clientId],
 			text: createMessageDto.text,
 			channel: createMessageDto.channel,
+			dest: createMessageDto.dest
 		};
 		this.messages.push(message);
 		return message;
@@ -62,6 +65,23 @@ export class MessagesService {
 		server.to(createMessageDto.channel).emit('message', message);
 		console.log(`User: ${createMessageDto.name} write in: ${createMessageDto.channel}`);
 		return  message;
+	}
+
+	async directMessage(createMessageDto: CreateMessageDto,  client:Socket, server: Server)
+	{
+		//cerco l'utenti nello user se è online avrà un socket unico identificativo aperto
+		//altrimenti e offline quindi ritorna undefined
+		//se l'utente è offline viene chiuso il socket
+		//se è online in automatico gli viene assegnato un socket id publico
+		//nella user class e ogni utente puo inviare una richiesta di chat
+		//con il quale puo chattare privatamente
+		const dest = await this.userService.getByName(createMessageDto.dest);
+		const message = this.create(createMessageDto, client.id);
+	//	server.to(client.id).emit("message", message);
+		console.log((await dest).username);
+		//client.broadcast.to(dest.socketId).emit("message", message);
+
+		return message;
 	}
 
 	async createRoom(channel: string, name: string, password: string,client: Socket)

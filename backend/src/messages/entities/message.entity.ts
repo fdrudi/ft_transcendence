@@ -11,6 +11,9 @@ class Message {
 	text: any;
 
 	@Column()
-	channel: string;
+	dest?: string;
+
+	@Column()
+	channel?: string;
 }
 export default Message;
