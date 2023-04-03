@@ -50,6 +50,14 @@ export class UsersService {
 		throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
 	}
 
+	async getByName(name: string) {
+		const user = await this.userRep.findOne({ where: { username: name } });
+		if (user) {
+			return user;
+		}
+		throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+	}
+
 	async create(userData: CreateUserDto): Promise<CreateUserDto | User> {
 		const user = await this.getByEmail(userData.email);
 		if (!user) {
