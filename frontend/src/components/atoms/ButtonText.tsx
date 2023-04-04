@@ -1,6 +1,6 @@
-import React from 'react';
-import styled from 'styled-components';
-import theme from '@/themes/Style';
+import React from "react";
+import styled from "styled-components";
+import theme from "@/themes/Style";
 
 const Button = styled.button`
   padding: 17px 40px;
@@ -33,10 +33,15 @@ const Button = styled.button`
 interface Props {
   text: string;
   onClick?: () => void;
+  ref?: any;
 }
 
-const ButtonText: React.FC<Props> = ({ text, onClick }) => {
-  return <Button onClick={onClick}>{text}</Button>;
+const ButtonText: React.FC<Props> = ({ text, onClick, ref }) => {
+  return (
+    <Button onClick={onClick} ref={ref}>
+      {text}
+    </Button>
+  );
 };
 
 export default ButtonText;

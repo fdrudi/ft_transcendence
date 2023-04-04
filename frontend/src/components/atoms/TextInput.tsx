@@ -1,6 +1,6 @@
-import theme from '@/themes/Style';
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import theme from "@/themes/Style";
+import React, { ChangeEvent, useState } from "react";
+import styled from "styled-components";
 
 const InputGroup = styled.div`
   font-family: ${theme.font.main};
@@ -47,23 +47,34 @@ const Label = styled.label<{ isFocusedOrFilled: boolean }>`
 
 interface Props {
   label: string;
+  isPassword?: boolean;
+  inputValue: string;
+  setInputValue: (value: string) => void;
 }
 
-const TextInput: React.FC<Props> = ({ label }) => {
+const TextInput: React.FC<Props> = ({
+  label,
+  inputValue,
+  setInputValue,
+  isPassword,
+}) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-
-  const isFocusedOrFilled = isFocused || inputValue !== '';
+  const isFocusedOrFilled = isFocused || inputValue !== "";
 
   return (
     <InputGroup>
       <Input
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        onChange={(e) => setInputValue(e.target.value)}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          setInputValue(e.target.value)
+        }
         required
+        type={isPassword ? "password" : "text"}
       />
-      {label ? <Label isFocusedOrFilled={isFocusedOrFilled}>{label}</Label> : null}
+      {label ? (
+        <Label isFocusedOrFilled={isFocusedOrFilled}>{label}</Label>
+      ) : null}
     </InputGroup>
   );
 };

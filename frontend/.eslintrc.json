@@ -29,7 +29,10 @@
   },
   "rules": {
     "no-use-before-define": "off",
-    "react/jsx-filename-extension": "off",
+    "react/jsx-filename-extension": [
+      "error",
+      { "extensions": [".jsx", ".tsx"] }
+    ],
     "react/prop-types": "off",
     "comma-dangle": "off",
     "padded-blocks": "off",

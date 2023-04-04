@@ -1,7 +1,7 @@
 // StyledPaymentOptions.tsx
-import theme from '@/themes/Style';
-import React from 'react';
-import styled from 'styled-components';
+import theme from "@/themes/Style";
+import React from "react";
+import styled from "styled-components";
 
 const Button = styled.button`
   padding: 17px 40px;

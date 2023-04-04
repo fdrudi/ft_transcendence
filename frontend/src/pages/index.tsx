@@ -1,12 +1,16 @@
-import Head from 'next/head';
-import Image from 'next/image';
-import { Inter } from 'next/font/google';
-import styles from '@/styles/Home.module.css';
-import { ButtonIcon, ButtonText, TextInput, TextSeparator } from '@/components/atoms';
-import { GoogleIcon, Icon42 } from '../../public/Icons';
-import { ModalTemplate } from '@/components/templates';
-import styled from 'styled-components';
-import { Box } from '@chakra-ui/react';
+import Head from "next/head";
+import {
+  ButtonIcon,
+  ButtonText,
+  TextInput,
+  TextSeparator,
+} from "@/components/atoms";
+import { GoogleIcon, Icon42 } from "../../public/Icons";
+import styled from "styled-components";
+import { Inter } from "next/font/google";
+import styles from "@/styles/Home.module.css";
+import { signIn } from "next-auth/react";
+import { ModalTemplate } from "@/components/templates";
 
 const AuthOptions = styled.div`
   width: calc(100% - 40px);
@@ -15,13 +19,29 @@ const AuthOptions = styled.div`
   gap: 20px;
   padding: 10px;
 `;
-
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 const Home: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     // Formular submission action here!
+  };
+  const handleSignIn42 = async () => {
+    await signIn("42-school", {
+      callbackUrl: "/auth",
+    });
+  };
+
+  const handleSignInGoogle = async () => {
+    await signIn("google", {
+      callbackUrl: "/auth",
+    });
+  };
+
+  const handleSignInGithub = async () => {
+    await signIn("github", {
+      callbackUrl: "/auth",
+    });
   };
 
   return (
@@ -35,21 +55,18 @@ const Home: React.FC = () => {
       <main className={styles.main}>
         <ModalTemplate>
           <AuthOptions>
-            <ButtonIcon>
+            <ButtonIcon onClick={handleSignInGoogle}>
               <GoogleIcon />
             </ButtonIcon>
-            <ButtonIcon>
+            <ButtonIcon onClick={handleSignIn42}>
               <Icon42 />
             </ButtonIcon>
-            <ButtonIcon>
+            <ButtonIcon onClick={handleSignInGithub}>
               <GoogleIcon />
             </ButtonIcon>
           </AuthOptions>
           <TextSeparator text="Or create an account" />
-          <Box>
-            <TextInput label="Email" />
-            <TextInput label="Password" />
-          </Box>
+
           <ButtonText text="Login" />
         </ModalTemplate>
       </main>
