@@ -39,6 +39,9 @@ class User {
 
 	@Column({ default: 0 })
 	matchs: number;
+
+	//@Column({})
+	//publicSocketId: string;
 }
 
 export default User;
