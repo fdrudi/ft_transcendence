@@ -61,7 +61,8 @@ export class UsersService {
 	async create(userData: CreateUserDto): Promise<CreateUserDto | User> {
 		const user = await this.getByEmail(userData.email);
 		if (!user) {
-			const newUser = await this.userRep.create(userData);
+			//const socketId = [creare funzione che va ad aprire un socket e passarla al create. Vedi sotto]
+			const newUser = await this.userRep.create(userData/*, socketId*/);
 			await this.userRep.save(newUser);
 			return new CreateUserDto(newUser);
 		}
