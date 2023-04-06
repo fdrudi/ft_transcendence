@@ -40,8 +40,8 @@ class User {
 	@Column({ default: 0 })
 	matchs: number;
 
-	//@Column({})
-	//publicSocketId: string;
+	@Column({ default: "" })
+	pvtSocketId: string;
 }
 
 export default User;

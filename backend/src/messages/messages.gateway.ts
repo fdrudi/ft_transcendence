@@ -58,9 +58,16 @@ export class MessagesGateway implements OnGatewayInit {
 		return await this.messagesService.createMessage(createMessageDto, client, this.server);
 	}
 
+	@SubscribeMessage('online')
+	async online(@MessageBody('name') name, @ConnectedSocket() client: Socket)
+	{
+		return await this.messagesService.online(name, client.id.toString());
+	}
+
 	@SubscribeMessage('directMessage')
-	async directMessage(@MessageBody() createMessageDto: CreateMessageDto,  @ConnectedSocket() client: Socket) {
-		return await this.messagesService.directMessage(createMessageDto, client, this.server);
+	async directMessage(@MessageBody() createMessageDto: CreateMessageDto, @ConnectedSocket() client: Socket)
+	{
+		return this.messagesService.directMessage(createMessageDto, client, this.server);
 	}
 
 	@SubscribeMessage('createRoom')

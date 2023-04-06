@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 import UserChannel from './entities/user-channel.entity';
 import { Server, Socket } from 'socket.io';
 import { UsersService } from 'src/users/users.service';
+import { Status } from 'src/users/user.enums';
 
 @Injectable()
 export class MessagesService {
@@ -67,21 +68,28 @@ export class MessagesService {
 		return  message;
 	}
 
-	async directMessage(createMessageDto: CreateMessageDto,  client:Socket, server: Server)
+	async online(name:string, clientId :string)
 	{
-		//cerco l'utenti nello user se è online avrà un socket unico identificativo aperto
-		//altrimenti e offline quindi ritorna undefined
-		//se l'utente è offline viene chiuso il socket
-		//se è online in automatico gli viene assegnato un socket id publico
-		//nella user class e ogni utente puo inviare una richiesta di chat
-		//con il quale puo chattare privatamente
-		const dest = await this.userService.getByName(createMessageDto.dest);
-		const message = this.create(createMessageDto, client.id);
-	//	server.to(client.id).emit("message", message);
-		console.log((await dest).username);
-		//client.broadcast.to(dest.socketId).emit("message", message);
+		try {
+			const user = await this.userService.getByName(name);
+			await this.userService.userRep.update(user.id, {pvtSocketId: clientId, status: Status.ONLINE})
+			return user;
+		} catch (error) {
+			console.log("user not found");
+		}
+	}
 
-		return message;
+	async directMessage(createMessageDto: CreateMessageDto, client:Socket, server:Server)
+	{
+		try {
+			const message = await this.create(createMessageDto, client.id);
+			const dest = await  this.userService.getByName(createMessageDto.dest);
+			client.broadcast.to((await dest).pvtSocketId).emit("message", message);
+			server.to(client.id).emit('message', message);
+		} catch (error) {
+			console.log("dest or message not found");	
+		}
+		return true;
 	}
 
 	async createRoom(channel: string, name: string, password: string,client: Socket)
