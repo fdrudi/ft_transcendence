@@ -13,6 +13,7 @@ import { TwoFactorAuthenticationService } from './2fa/twoFactorAuthentication.se
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { Auth42Strategy } from './strategies/intra42.strategy';
 import { JwtTwoFactorStrategy } from './strategies/2fa-jwt.strategy';
+import { MessagesModule } from 'src/messages/messages.module';
 
 @Module({
 	imports: [
