@@ -29,7 +29,7 @@ import { Domain } from 'domain';
 import Split from 'split.js';
 import TokenPayload from './interface/tokenPayload.interface';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
 	postsService: any;
 	constructor(private authService: AuthService, private userService: UsersService, private httpService: HttpService, private jwtService: JwtService) {}
@@ -44,11 +44,18 @@ export class AuthController {
         ad attaccare i cookie con il secret di JWT_ACCESS_TOKEN_SECRET altrimenti il classico jwt
         normale
       ------------------------------------------------------------------------------------------------------------*/
-	@HttpCode(200)
+	@HttpCode(301)
 	@UseGuards(Auth42)
 	@Get()
 	async login42(@Req() _req: RequestWithUser, @Res({ passthrough: true }) response: Response) {
 		let userInDatabase;
+	/*		temprary creation of a real user
+			let a = {
+			email: 'ugo',
+			username: 'ugo',
+			pictureLink: 'ugo',
+		};
+	*/
 		const newUser: CreateUserDto = await this.authService.register(new CreateUserDto(_req.user));
 		if (newUser.isTwoFactorAuthenticationEnabled == undefined) {
 			userInDatabase = await this.userService.getByEmail(newUser.email);
