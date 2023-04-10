@@ -12,10 +12,8 @@ async function bootstrap() {
 			skipNullProperties: false,
 		}),
 	);
-	app.enableCors({
-		credentials: true,
-		origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost', 'http://localhost:8081', 'http://localhost:3000/api/auth'],
-	});
+
+	app.enableCors({ credentials: true, origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost'] });
 
 	app.use(cookieParser());
 
@@ -26,6 +24,6 @@ async function bootstrap() {
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);
 
-	await app.listen(3000);
+	await app.listen(8081);
 }
 bootstrap();
