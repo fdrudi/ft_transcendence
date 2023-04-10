@@ -1,0 +1,50 @@
+version: '3'
+services:
+
+    frontend:
+        build: frontend/
+        image: frontend
+        container_name: frontend
+        ports:
+            - '3000:3000'
+        volumes:
+            - ./frontend/src:/app/src
+            - ./frontend/package.json:/app/package.json
+            - ./frontend/package-lock.json:/app/package-lock.json
+        networks:
+            - trascendence
+
+    backend:
+        build: backend/
+        image: backend
+        container_name: backend
+        ports:
+            - '8081:8081'
+        volumes:
+            - ./backend/src:/app/src
+            - ./backend/package.json:/app/package.json
+            - ./backend/package-lock.json:/app/package-lock.json
+        depends_on:
+            - postgres
+        networks:
+            - trascendence
+            - postgres
+
+    postgres:
+        image: postgres:alpine
+        container_name: postgres
+        ports:
+            - '5432:5432'
+        volumes:
+            - /var/folders/postgres:/data/postgres
+        env_file:
+            - docker.env
+        networks:
+            - postgres
+
+networks:
+    trascendence:
+      name: nw_trascendence
+
+    postgres:
+      name: db_trascendence

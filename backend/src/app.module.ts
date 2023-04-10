@@ -12,13 +12,10 @@ import { UsersService } from './users/users.service';
 import { AuthService } from './auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { MulterModule } from '@nestjs/platform-express';
-import { MessagesModule } from './messages/messages.module';
-import { MessagesGateway } from './messages/messages.gateway';
 import path from 'path';
 
 @Module({
 	imports: [
-		MessagesModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			validationSchema: Joi.object({
