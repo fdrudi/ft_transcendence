@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-empty-function */
 
@@ -51,10 +50,19 @@ export class UsersService {
 		throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
 	}
 
+	async getByName(name: string) {
+		const user = await this.userRep.findOne({ where: { username: name } });
+		if (user) {
+			return user;
+		}
+		throw new HttpException('User with this id does not exist', HttpStatus.NOT_FOUND);
+	}
+
 	async create(userData: CreateUserDto): Promise<CreateUserDto | User> {
 		const user = await this.getByEmail(userData.email);
 		if (!user) {
-			const newUser = await this.userRep.create(userData);
+			//const socketId = [creare funzione che va ad aprire un socket e passarla al create. Vedi sotto]
+			const newUser = await this.userRep.create(userData/*, socketId*/);
 			await this.userRep.save(newUser);
 			return new CreateUserDto(newUser);
 		}

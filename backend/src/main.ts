@@ -1,4 +1,3 @@
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
@@ -13,6 +12,7 @@ async function bootstrap() {
 			skipNullProperties: false,
 		}),
 	);
+
 	app.enableCors({ credentials: true, origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost'] });
 
 	app.use(cookieParser());
