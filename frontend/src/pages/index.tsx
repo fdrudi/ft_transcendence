@@ -7,10 +7,10 @@ import {
 } from "@/components/atoms";
 import { GoogleIcon, Icon42 } from "../../public/Icons";
 import styled from '@emotion/styled';
-import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { signIn } from "next-auth/react";
 import { ModalTemplate } from "@/components/templates";
+import SignIn from "./auth/signin";
 
 const AuthOptions = styled.div`
   width: calc(100% - 40px);
@@ -19,7 +19,6 @@ const AuthOptions = styled.div`
   gap: 20px;
   padding: 10px;
 `;
-const inter = Inter({ subsets: ["latin"] });
 
 const Home: React.FC = () => {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -27,20 +26,20 @@ const Home: React.FC = () => {
     // Formular submission action here!
   };
   const handleSignIn42 = async () => {
-    await signIn("42-school", {
-      callbackUrl: "/auth",
-    });
+    await signIn("42-school"
+      // callbackUrl: "http://locahlhost:3000/api/auth",
+    );
   };
 
   const handleSignInGoogle = async () => {
-    await signIn("google", {
-      callbackUrl: "/api/auth",
-    });
+    await signIn("google"
+      // callbackUrl: "http://locahlhost:3000/api/auth",
+    );
   };
 
   const handleSignInGithub = async () => {
     await signIn("github", {
-      callbackUrl: "/auth",
+      callbackUrl: "/api/auth",
     });
   };
 
@@ -55,10 +54,10 @@ const Home: React.FC = () => {
       <main className={styles.main}>
         <ModalTemplate>
           <AuthOptions>
-            <ButtonIcon onClick={handleSignInGoogle}>
+            <ButtonIcon onClick={() => SignIn("GoogleProvider")}>
               <GoogleIcon />
             </ButtonIcon>
-            <ButtonIcon onClick={handleSignIn42}>
+            <ButtonIcon onClick={() => SignIn("FortyTwoProvider")}>
               <Icon42 />
             </ButtonIcon>
             <ButtonIcon onClick={handleSignInGithub}>

@@ -35,7 +35,8 @@ const Authenticate = () => {
 
     const fortyTwoLogin = async () => {
       try {
-        const response = await fetch("/api/auth", {
+        const response = await fetch("https://api.intra.42.fr/oauth/authorize", {
+          // mode: 'cors',
           method: "GET",
           credentials: "include", // Important to send cookies
         });

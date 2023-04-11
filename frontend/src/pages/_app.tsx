@@ -29,30 +29,30 @@ const MyApp = ({
 }: AppProps<{ session: Session }>) => {
   const router = useRouter();
 
-  useEffect(() => {
-    axios.defaults.withCredentials = true;
-    localStorage.debug = process.env.NEXT_PUBLIC_DEBUG as string;
+  // useEffect(() => {
+  //   axios.defaults.withCredentials = true;
+  //   localStorage.debug = process.env.NEXT_PUBLIC_DEBUG as string;
 
-    const getCsrfToken = async () => {
-      if (process.env.NEXT_PUBLIC_API_URL) {
-        const { data } = await axios.get<Csrf>(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/csrf`
-        );
-        axios.defaults.headers.common["csrf-token"] = data.csrfToken;
-      }
-    };
+  //   const getCsrfToken = async () => {
+  //     if (process.env.NEXT_PUBLIC_API_URL) {
+  //       const { data } = await axios.get<Csrf>(
+  //         `${process.env.NEXT_PUBLIC_API_URL}/auth/csrf`
+  //       );
+  //       axios.defaults.headers.common["csrf-token"] = data.csrfToken;
+  //     }
+  //   };
 
-    getCsrfToken();
-  }, [router, session]);
+  //   getCsrfToken();
+  // }, [router, session]);
 
   return (
     <ChakraProvider>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
+        {/* <AuthProvider> */}
           <SessionProvider session={session}>
             <Component {...pageProps} />
           </SessionProvider>
-        </AuthProvider>
+        {/* </AuthProvider> */}
         <ReactQueryDevtools />
       </QueryClientProvider>
     </ChakraProvider>

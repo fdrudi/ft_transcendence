@@ -22,7 +22,7 @@ const Form = styled.form`
 
 interface Props {
   children: React.ReactNode;
-  onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit?: (event: React.FormEvent<HTMLFormElement>) => "";
 }
 
 const ModalTemplate: React.FC<Props> = ({ children, onSubmit }) => (
