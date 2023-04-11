@@ -13,7 +13,11 @@ async function bootstrap() {
 			skipNullProperties: false,
 		}),
 	);
-	app.enableCors({ credentials: true, origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost'] });
+	// app.enableCors({ credentials: true, origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost'] });
+
+	var cors = require('cors')
+
+	app.use(cors())
 
 	app.use(cookieParser());
 

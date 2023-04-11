@@ -30,7 +30,7 @@ import { Domain } from 'domain';
 import Split from 'split.js';
 import TokenPayload from './interface/tokenPayload.interface';
 
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
 	postsService: any;
 	constructor(private authService: AuthService, private userService: UsersService, private httpService: HttpService, private jwtService: JwtService) {}
