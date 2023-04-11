@@ -1,10 +1,10 @@
-import { createGlobalStyle } from 'styled-components';
+import { css, Global } from '@emotion/react';
 import { normalize } from 'styled-normalize';
 
 import theme from '@/themes/Style';
 
-const GlobalStyles = createGlobalStyle`
-  ${normalize};
+const globalStyles = css`
+  ${normalize?.toString()};
 
   * {
     box-sizing: border-box;
@@ -34,5 +34,7 @@ const GlobalStyles = createGlobalStyle`
     list-style: none;
   }
 `;
+
+const GlobalStyles = () => <Global styles={globalStyles} />;
 
 export default GlobalStyles;

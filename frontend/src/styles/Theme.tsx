@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
-import { ThemeProvider } from 'styled-components';
-
+import { ThemeProvider } from '@emotion/react'
+// import {ThemeP} from '@emotion/styled';
 import theme from '../themes/Style';
 import GlobalStyles from './GlobalStyles';
 

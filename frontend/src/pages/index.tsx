@@ -6,7 +6,7 @@ import {
   TextSeparator,
 } from "@/components/atoms";
 import { GoogleIcon, Icon42 } from "../../public/Icons";
-import styled from "styled-components";
+import styled from '@emotion/styled';
 import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { signIn } from "next-auth/react";
@@ -34,7 +34,7 @@ const Home: React.FC = () => {
 
   const handleSignInGoogle = async () => {
     await signIn("google", {
-      callbackUrl: "/auth",
+      callbackUrl: "/api/auth",
     });
   };
 

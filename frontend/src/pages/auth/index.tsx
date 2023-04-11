@@ -22,7 +22,7 @@ const Authenticate = () => {
   useEffect(() => {
     if (!session || !process.env.NEXT_PUBLIC_API_URL) return;
 
-    const urlOauth = `${process.env.NEXT_PUBLIC_API_URL}/auth/oauth-login`;
+    const urlOauth = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
 
     const isGoogleOAuth = (email: string | null | undefined) =>
       email && email.includes("gmail.com");
@@ -35,7 +35,7 @@ const Authenticate = () => {
 
     const fortyTwoLogin = async () => {
       try {
-        const response = await fetch("/auth", {
+        const response = await fetch("/api/auth", {
           method: "GET",
           credentials: "include", // Important to send cookies
         });

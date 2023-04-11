@@ -10,8 +10,8 @@ interface IconProps {
   color?: string;
 }
 
-const Icon42: React.FC<IconProps> = ({size, color}) => <Image src={Logo42} height={size || 30} width={size || 30} color={color || theme.color.dark} alt="logo 42" />;
-const GoogleIcon: React.FC<IconProps> = ({size, color}) => <Image src={Google} height={size || 30} width={size || 30} color={color || theme.color.dark} alt="logo google" />;
+const Icon42: React.FC<IconProps> = ({size, color}) => <Image src={Logo42} style={{ width: size || 'auto', height: size || 'auto'}} color={color || theme.color.dark} alt="logo 42" />;
+const GoogleIcon: React.FC<IconProps> = ({size, color}) => <Image src={Google} style={{ width: size || 'auto', height: size || 'auto'}} color={color || theme.color.dark} alt="logo google" />;
 
 export {
   Icon42,

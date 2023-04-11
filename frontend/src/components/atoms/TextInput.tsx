@@ -1,6 +1,6 @@
 import theme from "@/themes/Style";
 import React, { ChangeEvent, useState } from "react";
-import styled from "styled-components";
+import styled from '@emotion/styled';
 
 const InputGroup = styled.div`
   font-family: ${theme.font.main};
