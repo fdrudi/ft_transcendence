@@ -10,6 +10,7 @@ import {
   Loading,
   ValidationDialog,
 } from "@/components/atoms";
+import { Link } from "@chakra-ui/react";
 
 const Authenticate = () => {
   const router = useRouter();
@@ -112,6 +113,27 @@ const Authenticate = () => {
         userId={validationUserId}
         onClose={handleClose}
       />
+		<div>
+      <nav>
+        <li>
+          <ul>
+            <Link href="/"> home </Link>
+          </ul>
+          <ul>
+            <Link href="/Blogs"> about </Link>{" "}
+          </ul>
+          <ul>
+            <Link href="/Blogs/1"> about 1 </Link>{" "}
+          </ul>
+          <ul>
+            <Link href="/authors"> author </Link>{" "}
+          </ul>
+          <ul>
+            <Link href="/authors/1"> author 1</Link>{" "}
+          </ul>
+        </li>
+      </nav>
+    </div>
     </>
   );
 };
