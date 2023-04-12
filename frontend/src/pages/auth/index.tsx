@@ -102,11 +102,11 @@ const Authenticate = () => {
   return (
     <>
       <AuthAlertCollapse show={readyRedirect}>
-        <AuthAlert
+        {/* <AuthAlert
           message={error}
           setMessage={setError}
           readyRedirect={readyRedirect}
-        />
+        /> */}
       </AuthAlertCollapse>
       <ValidationDialog
         open={openValidationDialog}
