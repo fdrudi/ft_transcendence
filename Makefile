@@ -1,6 +1,8 @@
 NAME = ft_trascendence
 
 all:
+	@ mkdir ./frontend/node_modules
+	@ mkdir ./backend/node_modules
 	@ docker-compose -f docker-compose.yml up --build
 
 stop:
@@ -8,6 +10,8 @@ stop:
 
 clean: stop
 	@ docker system prune -a -f
+	@ rm -rf ./frontend/node_modules
+	@ rm -rf ./backend/node_modules
 
 prune: clean
 	@ docker volume rm $$(docker volume ls -qf dangling=true)
