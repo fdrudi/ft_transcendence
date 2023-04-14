@@ -1,4 +1,3 @@
-
 import { Exclude } from 'class-transformer';
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Status } from './user.enums';
@@ -40,6 +39,9 @@ class User {
 
 	@Column({ default: 0 })
 	matchs: number;
+
+	@Column({ default: "" })
+	pvtSocketId: string;
 }
 
 export default User;
