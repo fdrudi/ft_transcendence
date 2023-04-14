@@ -1,31 +1,94 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true,
-    "jest": true
-  },
   "extends": [
-    "react-app",
-    "react-app/jest",
-    "airbnb-base",
     "airbnb-typescript",
-    "plugin:import/typescript",
-    "plugin:prettier/recommended"
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/react",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended",
+    "next/core-web-vitals"
+  ],
+  "plugins": [
+    "react",
+    "react-hooks",
+    "jsx-a11y",
+    "@typescript-eslint",
+    "prettier"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": ["./tsconfig.json"],
-    "ecmaFeatures": {
-      "jsx": true
-    },
-    "ecmaVersion": "latest",
-    "sourceType": "module"
+    "ecmaVersion": 2018,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
   },
-  "plugins": ["react", "@typescript-eslint", "prettier"],
+  "env": {
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
   "rules": {
-    "react/react-in-jsx-scope": ["off"],
-    "react/jsx-uses-react": ["off"],
-    "react/jsx-props-no-spreading": ["warn"],
-    "react/no-unescaped-entities": ["off"]
+    "no-use-before-define": "off",
+    "react/jsx-filename-extension": [
+      "error",
+      { "extensions": [".jsx", ".tsx"] }
+    ],
+    "react/prop-types": "off",
+    "comma-dangle": "off",
+    "padded-blocks": "off",
+    "arrow-body-style": "off",
+    "global-require": "off",
+    "consistent-return": "off",
+    "no-plusplus": "off",
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "max-len": [
+      2,
+      {
+        "code": 120
+      }
+    ],
+    "array-element-newline": [
+      "error",
+      "consistent"
+    ],
+    "curly": [
+      "error",
+      "multi-line"
+    ],
+    "object-curly-newline": [
+      2,
+      {
+        "multiline": true
+      }
+    ],
+    "object-property-newline": [
+      2,
+      {
+        "allowAllPropertiesOnSameLine": true
+      }
+    ],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/react-in-jsx-scope": "off",
+    "import/no-extraneous-dependencies": "off",
+    "indent": [
+      "error",
+      2
+    ],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "prettier/prettier": ["error", {}, { "usePrettierrc": true }]
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
   }
 }
