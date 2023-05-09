@@ -77,6 +77,8 @@ const Home: React.FC = () => {
 	  )}
 	  {session && (
 		<>
+		<div className={styles.circle}>
+		</div>
 		<div>
 		  <h1>Successfully signed in as {session.user.email} </h1>
 		</div>

@@ -4,18 +4,18 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background: hwb(302 0% 0%);
+	background: #14213d;
 	box-shadow: 0 5px 10px #ccc;
   }
 
   .topHeader {
-	border:2px solid #00d9ff;
+	border:2px solid #003098;
 	font-size:19pt; /* or whatever */
 	height: 56px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	background: hwb(201 0% 0%);
+	background: #14213d;
 	box-shadow: 0 5px 10px #ccc;
   }
 
@@ -40,103 +40,30 @@
 	background: #e1a835;
   }
 
-/* ////////////////////////////////////////////////////////// */
-
-
-  .neon-red {
-	--neon: #FF5161;
-	--neon-glow: #D30302;
+  .text span {
+	font-size: 60px;
+	padding: 0 10px;
+	text-transform: uppercase;
+	color: #fff;
+	animation: zoomup 2s linear infinite;
+	animation-delay: calc(200ms * var(--i));
   }
 
-  .neon-pink {
-	--neon: #FF53cd;
-	--neon-glow: #e10361;
-  }
+  @keyframes zoomup {
+	0%,
+	100% {
+	  color: #00c2ba;
+	  filter: blur(1px);
+	  text-shadow: 0 0 10px #00c2ba, 0 0 20px #00c2ba, 0 0 30px #00c2ba,
+		0 0 40px #00c2ba, 0 0 60px #00c2ba, 0 0 80px #00c2ba, 0 0 100px #00c2ba,
+		0 0 120px #00c2ba;
+	}
 
-  .neon-purple {
-	--neon: #9461fd;
-	--neon-glow: #4003e6;
-  }
-
-  .neon-blue {
-	--neon: #2dd9fe;
-	--neon-glow: #00a3d5;
-  }
-
-  .neon-green {
-	--neon: #00fe9b;
-	--neon-glow: #02c435;
-  }
-
-  .neon-yellow {
-	--neon: #ffdb4e;
-	--neon-glow: #b48505;
-  }
-
-  .neon-white {
-	--neon: #fefefe;
-	--neon-glow: #ffffff;
-  }
-
-  @supports (background: color(display-p3 1 1 1)) {
-	@media (dynamic-range: high) {
-	  .neon-red {
-		--neon-glow: color(display-p3 1 0 0);
-	  }
-
-	  .neon-pink {
-		--neon-glow: color(display-p3 1 0 1);
-	  }
-
-	  .neon-purple {
-		--neon-glow: color(display-p3 0 0 1);
-	  }
-
-	  .neon-blue {
-		--neon-glow: color(display-p3 0 1 1);
-	  }
-
-	  .neon-green {
-		--neon-glow: color(display-p3 0 1 0);
-	  }
-
-	  .neon-yellow {
-		--neon-glow: color(display-p3 1 1 0);
-	  }
-
-	  .neon-white {
-		--neon-glow: color(display-p3 1 1 1);
-	  }
+	5%,
+	95% {
+	  filter: blur(0);
+	  color: #fff;
+	  text-shadow: none;
 	}
   }
-
-  .ring {
-	border: 5px solid var(--neon);
-	box-shadow:
-	  0 0 50px var(--neon-glow),
-	  inset 0 0 50px var(--neon-glow);
-	border-radius: 50%;
-	width: 20vmin;
-	height: 20vmin;
-	position: relative;
-	box-sizing: border-box;
-	margin-bottom: 100px;
-  }
-
-  .ring::after,
-  .ring::before {
-	content: ' ';
-	height: 5px;
-	width: 100%;
-	position: absolute;
-	bottom: -60px;
-	border-radius: 5px;
-	background: var(--neon);
-	box-shadow: 0 0 25px 2.5px var(--neon-glow);
-  }
-
-  .ring::after {
-	bottom: -75px;
-  }
-
 
