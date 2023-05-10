@@ -1,5 +1,5 @@
 import React from "react";
-import { navLinks } from "../data";
+import { navLinks } from "../Header.data";
 import Link from "next/link";
 import { ButtonText } from "@/components/atoms";
 import styles from '@/styles/NavBar.module.css';
