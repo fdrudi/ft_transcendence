@@ -6,8 +6,8 @@ import GitHubProvider from "next-auth/providers/github";
 export default NextAuth({
   providers: [
     FortyTwoProvider({
-      clientId: process.env.NEXT_PUBLIC_FORTY_TWO_CLIENT_ID as string,
-      clientSecret: process.env.API42_SECRET as string,
+      clientId: process.env.FORTY_TWO_CLIENT_ID as string,
+      clientSecret: process.env.FORTY_TWO_CLIENT_SECRET as string,
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
